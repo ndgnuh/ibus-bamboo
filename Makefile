@@ -48,7 +48,7 @@ install: build
 	mkdir -p $(DESTDIR)$(PREFIX)/lib/
 	mkdir -p $(DESTDIR)$(ibus_dir)/component/
 
-	cp -R -f viet-on.png data $(DESTDIR)$(engine_dir)
+	cp -R -f viet-on.svg data $(DESTDIR)$(engine_dir)
 	cp -f $(ibus_e_name) $(DESTDIR)$(PREFIX)/lib/
 	cp -f $(engine_name).xml $(DESTDIR)$(ibus_dir)/component/
 
