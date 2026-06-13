@@ -57,6 +57,7 @@ func fifoWatchInitialize() {
 			line = strings.Trim(line, "\r\n ")
 			// fmt.Printf("FIFO newline: (%s)\n", line)
 			fifoWmClass = line
+			engineRef.FocusIn()
 		} else {
 			// Handle scanning errors or unexpected closures
 			if err := scanner.Err(); err != nil {

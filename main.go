@@ -40,6 +40,7 @@ var gui = flag.Bool("gui", false, "Show GUI")
 var isWayland = false
 var isGnome = false
 var useManualIntrospect = false
+var engineRef *IBusBambooEngine
 
 func hasGnome(env string) bool {
 	return strings.Contains(strings.ToLower(os.Getenv(env)), "gnome")
