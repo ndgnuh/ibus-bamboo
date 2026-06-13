@@ -548,11 +548,21 @@ func (e *IBusBambooEngine) getWmClass() string {
 
 func (e *IBusBambooEngine) getLatestWmClass() string {
 	var wmClass string
-	if isGnome {
+	switch introspector {
+	case IntrospectorGnome:
 		wmClass, _ = gnomeGetFocusWindowClass()
-	} else if isWayland {
+	case IntrospectorWayland:
 		wmClass = wlAppId
+	case IntrospectorX11:
+		wmClass = x11GetFocusWindowClass()
+	case IntrospectorFifo:
+		wmClass = fifoGetLatestFocusWindowClass()
 	}
+
+	// fmt.Printf("FIFO: %s\n", fifoWmClass)
+	// fmt.Printf("WL: %s\n", wlAppId)
+	// fmt.Printf("X11: %s\n", x11GetFocusWindowClass())
+
 	if wmClass == "" {
 		wmClass = x11GetFocusWindowClass()
 	}

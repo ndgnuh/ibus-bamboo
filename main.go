@@ -39,25 +39,70 @@ var version = flag.Bool("version", false, "Show version")
 var gui = flag.Bool("gui", false, "Show GUI")
 var isWayland = false
 var isGnome = false
+var useManualIntrospect = false
 
 func hasGnome(env string) bool {
 	return strings.Contains(strings.ToLower(os.Getenv(env)), "gnome")
 }
 
-func main() {
+type Introspector int
+
+const (
+	IntrospectorX11 Introspector = iota
+	IntrospectorGnome
+	IntrospectorWayland
+	IntrospectorFifo
+)
+
+var introspector = IntrospectorX11
+
+func guessIntrospector() Introspector {
 	if os.Getenv("WAYLAND_DISPLAY") != "" {
-		isWayland = true
+		return IntrospectorWayland
 	}
 	if hasGnome("XDG_CURRENT_DESKTOP") || hasGnome("DESKTOP_SESSION") || hasGnome("GDMSESSION") {
-		isGnome = true
+		return IntrospectorGnome
 	}
+	return IntrospectorX11
+}
+
+func main() {
+
+	/// Reading the introspector type
+	var forceIntrospector = os.Getenv("BAMBOO_INTROSPECTOR")
+	fmt.Printf("Introspector: (%s)\n", forceIntrospector)
+	switch forceIntrospector {
+	case "wayland":
+		introspector = IntrospectorWayland
+	case "gnome":
+		introspector = IntrospectorGnome
+	case "x11":
+		introspector = IntrospectorX11
+	case "fifo":
+		introspector = IntrospectorFifo
+	case "auto":
+		fallthrough
+	case "":
+		introspector = guessIntrospector()
+	default:
+		fmt.Printf("Warning, unknown introspector type (%s)\n", forceIntrospector)
+		introspector = guessIntrospector()
+	}
+
 	flag.Parse()
 	if *embedded {
 		os.Chdir(DataDir)
 	}
-	if isWayland && !isGnome {
+
+	// Custom initialization for
+	// some of the introspector that requires it.
+	switch introspector {
+	case IntrospectorWayland:
 		go wlGetFocusWindowClass()
+	case IntrospectorFifo:
+		go fifoWatchInitialize()
 	}
+
 	if *version {
 		fmt.Println(Version)
 	} else if *embedded {
