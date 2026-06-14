@@ -9,12 +9,14 @@ import (
 	"syscall"
 )
 
-var fifoInitialized bool /* If file watching is initialized */
-var fifoWmClass string   /* Current wm class */
+var fifoInitialized bool        /* If file watching is initialized */
+var fifoWmClass string          /* Current wm class */
+var fifoReady = make(chan bool) /* If the new wmclass is already read */
 
 const fifoPath = "/tmp/bamboo_introspector.fifo"
 
 func fifoGetLatestFocusWindowClass() string {
+	<-fifoReady // Wait for new WM CLASS
 	return fifoWmClass
 }
 
@@ -53,11 +55,9 @@ func fifoWatchInitialize() {
 	for {
 		if scanner.Scan() {
 			// Process each incoming line
-			line := scanner.Text()
-			line = strings.Trim(line, "\r\n ")
-			// fmt.Printf("FIFO newline: (%s)\n", line)
+			var line = strings.Trim(scanner.Text(), "\r\n ")
 			fifoWmClass = line
-			engineRef.FocusIn()
+			fifoReady <- true
 		} else {
 			// Handle scanning errors or unexpected closures
 			if err := scanner.Err(); err != nil {

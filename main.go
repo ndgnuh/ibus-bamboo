@@ -53,11 +53,15 @@ const (
 	IntrospectorGnome
 	IntrospectorWayland
 	IntrospectorFifo
+	IntrospectorCommand
 )
 
 var introspector = IntrospectorX11
 
 func guessIntrospector() Introspector {
+	if os.Getenv("BAMBOO_INTROSPECTOR_CMD") != "" {
+		return IntrospectorCommand
+	}
 	if os.Getenv("WAYLAND_DISPLAY") != "" {
 		return IntrospectorWayland
 	}
@@ -71,7 +75,6 @@ func main() {
 
 	/// Reading the introspector type
 	var forceIntrospector = os.Getenv("BAMBOO_INTROSPECTOR")
-	fmt.Printf("Introspector: (%s)\n", forceIntrospector)
 	switch forceIntrospector {
 	case "wayland":
 		introspector = IntrospectorWayland
@@ -81,6 +84,8 @@ func main() {
 		introspector = IntrospectorX11
 	case "fifo":
 		introspector = IntrospectorFifo
+	case "command":
+		introspector = IntrospectorCommand
 	case "auto":
 		fallthrough
 	case "":
@@ -89,6 +94,8 @@ func main() {
 		fmt.Printf("Warning, unknown introspector type (%s)\n", forceIntrospector)
 		introspector = guessIntrospector()
 	}
+
+	fmt.Printf("Introspector: (%v)\n", introspector)
 
 	flag.Parse()
 	if *embedded {

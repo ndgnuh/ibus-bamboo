@@ -556,6 +556,8 @@ func (e *IBusBambooEngine) getLatestWmClass() string {
 		wmClass = wlAppId
 	case IntrospectorX11:
 		wmClass = x11GetFocusWindowClass()
+	case IntrospectorCommand:
+		wmClass = cmdGetFocusedWmClass()
 	case IntrospectorFifo:
 		wmClass = fifoGetLatestFocusWindowClass()
 	}
